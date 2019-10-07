@@ -1,0 +1,128 @@
+Installing GDB
+As with GCC, the easiest way to install GDB is through Homebrew. 
+In a Terminal window, run the command 
+
+brew install gdb
+
+and wait for it to complete. (As usual, it may ask for your password.)
+
+
+Now, we need to code-sign the GDB executable, so it will be allowed to control other processes, 
+as necessary for a debugger. For that, we will first create a new certificate in Keychain.
+
+Creating a Certificate
+Open the Keychain Access application (can be found in Applications/Utilities directory or through Spotlight). 
+Select Certificate AssistantCreate a Certificate in the application menu (Keychain Access). An assistant window will appear 
+for guiding you through the process.
+
+First, you will be asked for the name and type of the certificate. You may choose the name arbitrarily, but to simplify its 
+future use in command line, prefer names without spaces or other fancy characters, e.g., gdbcert.
+Make sure that Identity Type is set to Self Signed Root, change Certificate Type to Code Signing, check the Let me override 
+defaults checkbox, and click Continue. Click Continue again in the popup prompt warning about the certificate being self-signed.
+On the next page, leave Security Number to be 1, and set Validity Period to a large enough number of days to cover the duration 
+of the class or more, say, 365. (Certificates cannot last forever; the maximum validity period is 20 years.)
+Then click Continue once again, and keep doing so to skip the next six screens until you see the one entitled Specify a Location For 
+The Certificate. For the only property, Keychain, choose System from the drop-down list. Lastly, click Create, type in your password, 
+if prompted, and click Done.
+Back in the main window, choose the System keychain in the sidebar on the left, and select the newly created certificate from the list. 
+Open the context menu and select Get Info. In the information window that will appear, expand the Trust section and set the Code Signing 
+property to Always Trust. Close this window (you may be asked for your password), and quit Keychain Access.
+Signing GDB
+Our new certificate is now ready to be used. In order to make it immediately available for signing, we need to restart the Taskgate 
+access-control service. You can use Activity Monitor to do this (also found in Applications/Utilities). Open it and filter the list 
+of processes by typing taskgated in the search field in the toolbar. (If you cannot find it, make sure the menu item ViewAll Processes 
+is checked.)
+
+There should be exactly one process left in the list. Highlight it, then select ViewQuit Process from the menu, and click Quit in the 
+popup prompt. The Taskgate process will be terminated and, consequently, should disappear from the list. In a few seconds, it will 
+be restarted by the system and should reappear in the list. Please wait for this to happen (it may take up to a minute or two, at worst).
+
+Finally, in a Terminal window, run 
+codesign -s gdbcert /usr/local/bin/gdb 
+
+(if you named your certificate differently, replace gdbcert with its name here). 
+Once again, you will be prompted for you username and password. If the command does not produce any 
+output, then GDB is successfully signed.
+
+
+We need to disable startu with shell by running:
+
+set startup-with-shell off
+echo "set startup-with-shell off" >> ~/.gdbinit
+
+
+
+Taks.Json
+
+
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558 
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "options": {
+        "env": {
+            "example": "example_folder"
+        }
+    },
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "g++ build active file",
+            "command": "${workspaceFolder}/make",
+            "args": [
+                "all"
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build"
+        },
+        {
+
+            "label": "echotest",
+            "command": "${workspaceFolder}/${example}/somescript",
+            "args": [],
+            "type": "shell"
+        }
+    ]
+}
+
+
+
+Launch.Json
+
+{
+
+    "version": "0.2.0",
+    
+    "configurations": [
+        {
+            "preLaunchTask": "echotest",
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/debug/bin/esp",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/debug/bin/",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/local/Cellar/gdb/x.x/gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}
+
+
+
+Makefile
+
+
+
