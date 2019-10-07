@@ -122,7 +122,14 @@ Launch.Json
 
 
 
-Makefile
+Makefile commands
+
+make all
+make clean
+make program
+make build
+make release
+make debug
 
 
 
