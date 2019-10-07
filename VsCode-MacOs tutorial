@@ -94,6 +94,7 @@ Taks.Json
             "label": "g++ build active file",
             "command": "${workspaceFolder}/make",
             "args": [
+                "debug",
                 "all"
             ],
             "problemMatcher": [
