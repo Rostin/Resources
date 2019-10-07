@@ -67,6 +67,14 @@ Usually the following line solves it, but if gdb hangs when you run it, just add
 echo "set startup-with-shell off" >> ~/.gdbinit 
 
 
+While trying to get things working at some point you might have run
+
+sudo DevToolsSecurity -enable
+
+in which case I would recommend
+
+sudo DevToolsSecurity -disable
+
 
 Taks.Json
 
